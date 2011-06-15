@@ -118,6 +118,10 @@ namespace spike_visualization {
             // view dimensions in pixels
             GLfloat view_width;
             GLfloat view_height;
+            
+            // view offset in pixels
+            GLfloat view_offset_x;
+            GLfloat view_offset_y;
         
             // bounds for drawing plots in pixels
             GLfloat data_viewport_x, data_viewport_y, data_viewport_width, data_viewport_height;
@@ -180,14 +184,15 @@ namespace spike_visualization {
         
         public:
 
-            SpikeRenderer(GLfloat _width, 
-                          GLfloat _height, 
-                          int _n_window_sets, 
-                          int _n_windows_per_set, 
-                          GLfloat _min_ampl,
+            SpikeRenderer(GLfloat _min_ampl,
                           GLfloat _max_ampl,
                           GLfloat _min_time,
-                          GLfloat _max_time){
+                          GLfloat _max_time,
+                          GLfloat _width, 
+                          GLfloat _height,
+                          GLfloat _offset_x = 0.0,
+                          GLfloat _offset_y = 0.0,
+                          shared_ptr<GLStringRenderer> _string_renderer){
                 
                 auto_thresholding = AUTO_THRESHOLD_OFF;
                                               
@@ -222,7 +227,7 @@ namespace spike_visualization {
                 
                 setViewDimensions(_width, _height);
                 
-                string_renderer = shared_ptr<GLStringRenderer>(new CocoaGLStringRenderer());
+                //string_renderer = shared_ptr<GLStringRenderer>(new CocoaGLStringRenderer());
                 
                 
                 // define parts with which the user can interact

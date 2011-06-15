@@ -33,7 +33,7 @@ namespace spike_visualization {
     // all concerned with display and visualization. Data sent to disk
     // should be encoded in native (e.g. short) format
 
-    using namespace boost;
+    using boost::shared_ptr;
     using namespace std;
 
     typedef struct SpikeWaveSelectionActionStruct {
@@ -99,10 +99,11 @@ namespace spike_visualization {
     };
         
         
-        
+
     class SpikeRenderer {
         
         protected:  
+
 
             list< shared_ptr<GLSpikeWave> > spike_list;
             

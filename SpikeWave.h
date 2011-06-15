@@ -8,7 +8,7 @@
  */
 
 #include <OpenGL/gl.h>
-#include <cstdlib>
+#include <stddef.h>
 
 namespace spike_visualization {
    

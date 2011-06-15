@@ -12,7 +12,6 @@
 
 #include "SpikeWave.h"
 #include "GLStringRenderer.h"
-#include "CocoaGLStringRenderer.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/format.hpp>
 #include <list>
@@ -190,15 +189,13 @@ namespace spike_visualization {
                           GLfloat _max_time,
                           GLfloat _width, 
                           GLfloat _height,
-                          GLfloat _offset_x = 0.0,
-                          GLfloat _offset_y = 0.0,
+                          GLfloat _offset_x,
+                          GLfloat _offset_y,
                           shared_ptr<GLStringRenderer> _string_renderer){
                 
                 auto_thresholding = AUTO_THRESHOLD_OFF;
                                               
                 units_per_volt = 1;
-                n_window_sets = _n_window_sets;
-                n_windows_per_set = _n_windows_per_set;
                 
                 time_range_min_seconds = _min_time;
                 time_range_max_seconds = _max_time;

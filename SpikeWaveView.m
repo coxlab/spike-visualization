@@ -7,6 +7,7 @@
 //
 
 #import "SpikeWaveView.h"
+#import "CocoaGLStringRenderer.h"
 #include <stdlib.h>
 
 @implementation SpikeWaveView
@@ -15,14 +16,18 @@
     
     NSRect frame_rect = [self frame];
     
-    renderer = new SpikeRenderer(frame_rect.size.width,
-                                 frame_rect.size.height,
-                                 5, // "units"
-                                 5, // windows per "unit"
-                                 -0.099,
+    shared_ptr<GLStringRenderer> string_renderer = 
+            shared_ptr<GLStringRenderer>(new CocoaGLStringRenderer());
+    
+    renderer = new SpikeRenderer(-0.099,
                                  0.099,
                                  -0.00125,
-                                 0.00125);
+                                 0.00125,
+                                 frame_rect.size.width,
+                                 frame_rect.size.height,
+                                 0.0,
+                                 0.0,
+                                 string_renderer);
     
     adjust_mode = -1;
                                  

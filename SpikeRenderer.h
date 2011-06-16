@@ -225,7 +225,7 @@ namespace spike_visualization {
                 
                 setViewDimensions(_width, _height);
                 
-                //string_renderer = shared_ptr<GLStringRenderer>(new CocoaGLStringRenderer());
+                string_renderer = _string_renderer;
                 
                 
                 // define parts with which the user can interact

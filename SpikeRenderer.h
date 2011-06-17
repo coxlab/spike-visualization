@@ -28,6 +28,7 @@
 
 
 namespace spike_visualization {
+
     
     // Note: we use GLfloat's everywhere here since the contained classes are 
     // all concerned with display and visualization. Data sent to disk
@@ -195,7 +196,8 @@ namespace spike_visualization {
                           shared_ptr<GLStringRenderer> _string_renderer){
                 
                 auto_thresholding = AUTO_THRESHOLD_OFF;
-                                              
+                threshold = 0;
+                                                                            
                 units_per_volt = 1;
                 
                 time_range_min_seconds = _min_time;
@@ -227,6 +229,11 @@ namespace spike_visualization {
                 
                 string_renderer = _string_renderer;
                 
+                view_offset_x = _offset_x;
+                view_offset_y = _offset_y;
+                
+                view_width = _width;
+                view_height = _height;
                 
                 // define parts with which the user can interact
                 threshold_knob_region = shared_ptr< RectangularHitTestRegion >(new RectangularHitTestRegion(0.0,0.0,0.0,0.0, SP_TRIGGER_THRESHOLD_SELECT, 0, 0));
@@ -273,7 +280,10 @@ namespace spike_visualization {
             
             int getMaxSpikesToShow(){ return max_spikes_to_show; }
         
-            bool hitTest(GLfloat view_x, GLfloat view_y, SpikeWaveSelectionAction *action){
+            bool hitTest(GLfloat _view_x, GLfloat _view_y, SpikeWaveSelectionAction *action){
+                
+                GLfloat view_x = _view_x - view_offset_x;
+                GLfloat view_y = _view_y - view_offset_y;
                 
                 vector< shared_ptr<HitTestRegion> >::iterator i;
                 
@@ -308,10 +318,15 @@ namespace spike_visualization {
             }
             
             
-            void setViewDimensions(GLfloat _width, GLfloat _height){
+            void setViewDimensions(GLfloat _width, GLfloat _height, 
+                                   GLfloat _view_offset_x=0.0,
+                                   GLfloat _view_offset_y=0.0){
+                                   
                 view_width = _width;
                 view_height = _height;
-                
+                view_offset_x = _view_offset_x;
+                view_offset_y = _view_offset_y;
+                               
                 data_viewport_width = view_width - left_padding - right_padding - vertical_range_frame_width - vertical_range_frame_offset;
                 data_viewport_height = view_height - top_padding - bottom_padding - horizontal_range_frame_height - horizontal_range_frame_offset;
                 data_viewport_x = left_padding + vertical_range_frame_width + vertical_range_frame_offset;
@@ -342,6 +357,10 @@ namespace spike_visualization {
             
             
             // convert view coordinates to data viewport coordinates
+            void convertGlobalViewToDataCoordinates(GLfloat x, GLfloat y, GLfloat *data_x, GLfloat *data_y){
+                return convertViewToDataCoordinates(x - view_offset_x, y - view_offset_y, data_x, data_y);
+            }
+            
             void convertViewToDataCoordinates(GLfloat view_x, GLfloat view_y, GLfloat *data_x, GLfloat *data_y){ 
                 GLfloat tmp_x = view_x - data_viewport_x;
                 GLfloat tmp_y = view_y - data_viewport_y;
@@ -359,7 +378,7 @@ namespace spike_visualization {
                 
             void convertViewToDataSize(GLfloat view_x, GLfloat view_y, GLfloat *data_x, GLfloat *data_y){ 
                 GLfloat tmp_x = view_x;
-                GLfloat tmp_y = view_y ;
+                GLfloat tmp_y = view_y;
                 
                 *data_x = tmp_x * (time_range_max_seconds - time_range_min_seconds) / (data_viewport_width);
                 *data_y = tmp_y * (amplitude_range_max_volts - amplitude_range_min_volts) / (data_viewport_height);
@@ -394,10 +413,17 @@ namespace spike_visualization {
             
             void render(){
             
+                glPushAttrib(GL_VIEWPORT_BIT);
+                glMatrixMode(GL_PROJECTION_MATRIX);
+                glPushMatrix();
+                glLoadIdentity();
+                
                 glEnable(GL_SCISSOR_TEST);
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glDisable(GL_DEPTH_TEST);
                 
+                glPushAttrib(GL_SCISSOR_BIT);
                 glPushMatrix();
                 selectFullViewport();
                 renderVerticalRangeFrame();
@@ -405,33 +431,64 @@ namespace spike_visualization {
                 renderAutoThresholdButtons();
                 renderThresholdKnob();
                 glPopMatrix();
-            
+                glPopAttrib();
+                
                
                 
+                glPushAttrib(GL_SCISSOR_BIT);
                 glPushMatrix();
                 selectDataViewport();
                 renderWaves();
                 renderThresholdLine();
                 glPopMatrix();
+                glPopAttrib();
             
-                glFlush();
+                glPopMatrix();
+                glPopAttrib();
+            
+//                glFlush();
             }
             
             
             void selectFullViewport(){
-                glViewport(0, 0, view_width, view_height);
-                glScissor(0, 0, view_width,view_height);
-                glOrtho(0, view_width, 0, view_height, -1.0, 1.0);  
+                
+
+                // don't draw outside of these bounds
+                glScissor(view_offset_x, view_offset_y, 
+                           view_width, 
+                           view_height);
+
+                // Set the viewport for this plot
+                glViewport(view_offset_x, view_offset_y, 
+                           view_width, 
+                           view_height);
+                
+
+                // set the proj matrix to ortho
+                glMatrixMode(GL_PROJECTION);
+                glOrtho(0.0f, view_width, 0.0f, view_height, -1.0f, 1.0f);
                 
                 glClearColor(0.0, 0.0, 0.0, 1.0);
                 glClear(GL_COLOR_BUFFER_BIT);
             }
             
             void selectDataViewport(){
-                glViewport(data_viewport_x, data_viewport_y, data_viewport_width, data_viewport_height);
                 
-                glScissor(data_viewport_x, data_viewport_y, data_viewport_width, data_viewport_height);
-                glOrtho(time_range_min_seconds, time_range_max_seconds, amplitude_range_min_volts, amplitude_range_max_volts, -1.0, 1.0);
+                glScissor(view_offset_x + data_viewport_x, 
+                          view_offset_y + data_viewport_y, 
+                          data_viewport_width, 
+                          data_viewport_height);
+                
+                glViewport(view_offset_x + data_viewport_x, 
+                          view_offset_y + data_viewport_y, 
+                          data_viewport_width, 
+                          data_viewport_height);
+                
+                
+                glMatrixMode(GL_PROJECTION);
+                glOrtho(time_range_min_seconds, time_range_max_seconds, 
+                        amplitude_range_min_volts, amplitude_range_max_volts, 
+                        -1.0, 1.0);
                 
                 glClearColor(0.0, 0.0, 0.0, 1.0);
                 glClear(GL_COLOR_BUFFER_BIT);
@@ -439,12 +496,14 @@ namespace spike_visualization {
             
             void renderThresholdKnob(){
             
-                glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT); // GL_COLOR_BUFFER_BIT for glBlendFunc, GL_ENABLE_BIT for glEnable / glDisable
+                glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT); 
                 
                 glEnable(GL_LINE_SMOOTH);
                 glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                
+                glDisable(GL_DEPTH_TEST);
             
                 GLfloat view_x, view_y;
                 convertDataToViewCoordinates(0.0, threshold, &view_x, &view_y);
@@ -623,7 +682,7 @@ namespace spike_visualization {
                 GLfloat pad = 4;
                 
                 glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT); // GL_COLOR_BUFFER_BIT for glBlendFunc, GL_ENABLE_BIT for glEnable / glDisable
-                glDisable (GL_DEPTH_TEST); // ensure text is not remove by depth buffer test.
+                glDisable (GL_DEPTH_TEST); // ensure text is not removed by depth buffer test.
                 glEnable (GL_BLEND); // for text fading
                 glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // ditto
                 glEnable (GL_TEXTURE_RECTANGLE_EXT);	
@@ -815,8 +874,9 @@ namespace spike_visualization {
             
             
     };
-        
-        
+    
+    typedef boost::shared_ptr<SpikeRenderer> SpikeRendererPtr;
+    
 }
 
 #endif

@@ -7,6 +7,10 @@ message CtlMessage {
     AUTOTHRESHOLD_LOW = 1;
     AUTOTHRESHOLD_HIGH = 2;
     AUTOTHRESHOLD_FACTOR = 3;
+    AMPLITUDE_MAX = 4;
+    AMPLITUDE_MIN = 5;
+    TIME_MAX = 6;
+    TIME_MIN = 7;
   }
   optional MessageType message_type = 3;
   optional double value = 4;

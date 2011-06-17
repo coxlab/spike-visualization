@@ -9,6 +9,7 @@
 
 #include <OpenGL/gl.h>
 #include <stddef.h>
+#include <boost/shared_ptr.hpp>
 
 namespace spike_visualization {
    
@@ -81,5 +82,6 @@ namespace spike_visualization {
     };
     
     typedef SpikeWave<GLfloat> GLSpikeWave;
+    typedef boost::shared_ptr<GLSpikeWave> GLSpikeWavePtr;
 }
 

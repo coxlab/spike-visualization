@@ -112,12 +112,59 @@ class SpikeChannelController {
         }
     }
 
+    void readControlSocket(){
+    
+        zmq::message_t msg;
+        
+        // Receive a message 
+        bool recvd = ctl_in_socket->recv(&msg, ZMQ_NOBLOCK);
+        
+        while(recvd){
+
+            string data((const char *)msg.data(), msg.size());
+            CtlMessage ctl;
+            ctl.ParseFromString(data);
+            
+            switch(ctl.message_type()){
+            
+                case CtlMessage::THRESHOLD:
+                    setTriggerThreshold(ctl.value(), true);
+                    break;
+                case CtlMessage::AUTOTHRESHOLD_LOW:
+                    if(ctl.value()){
+                        autothresholdDown();
+                    }
+                    break;
+                case CtlMessage::AUTOTHRESHOLD_HIGH:
+                    if(ctl.value()){
+                        autothresholdUp();
+                    }
+                    break;
+                case CtlMessage::AMPLITUDE_MAX:
+                    setAmplitudeRangeMax(ctl.value());
+                    break;
+                case CtlMessage::AMPLITUDE_MIN:
+                    setAmplitudeRangeMin(ctl.value());
+                    break;
+                case CtlMessage::TIME_MAX:
+                    setTimeRangeMax(ctl.value());
+                    break;
+                case CtlMessage::TIME_MIN:
+                    setTimeRangeMin(ctl.value());
+                    break;
+            }
+            
+            recvd = ctl_in_socket->recv(&msg, ZMQ_NOBLOCK);
+        }
+    
+    }
   
     // update
     
     void update(){
     
         readSpikeSocket();
+        readControlSocket();
     
     }
     
@@ -134,13 +181,11 @@ class SpikeChannelController {
     
     // UI interaction
     void mouseDown(float x, float y){
-        std::cerr << "down" << std::endl;
-    
+        
         SpikeWaveSelectionAction action;
     
         if(renderer->hitTest(x, y, &action)){
-            std::cerr << "HIT" << std::endl;
-        
+            
             adjust_mode = action.action_type;
         
             enterAdjustMode(adjust_mode);

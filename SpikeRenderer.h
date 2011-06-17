@@ -446,7 +446,7 @@ namespace spike_visualization {
                 glPopMatrix();
                 glPopAttrib();
             
-//                glFlush();
+                glFlush();
             }
             
             

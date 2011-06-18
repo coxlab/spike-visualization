@@ -150,6 +150,9 @@ namespace spike_visualization {
             float range_frame_font_size;
             float label_scale_factor;
             
+            bool display_channel_id;
+            int  channel_id;
+        
             // The trigger threshold (in V)
             GLfloat threshold;
             
@@ -199,6 +202,9 @@ namespace spike_visualization {
                 threshold = 0;
                                                                             
                 units_per_volt = 1;
+                
+                display_channel_id = true;
+                channel_id = 0;
                 
                 time_range_min_seconds = _min_time;
                 time_range_max_seconds = _max_time;
@@ -259,6 +265,8 @@ namespace spike_visualization {
 
                 
             }
+        
+            void setChannelID( int _id ){ channel_id = _id; }
             
             float getUnitsPerVolt() { return units_per_volt; }
             void setUnitsPerVolt(float _units_per_volt) { units_per_volt = _units_per_volt; } 
@@ -429,6 +437,7 @@ namespace spike_visualization {
                 renderVerticalRangeFrame();
                 renderHorizontalRangeFrame();
                 renderAutoThresholdButtons();
+                renderChannelID();
                 renderThresholdKnob();
                 glPopMatrix();
                 glPopAttrib(); // GL_SCISSOR_BIT
@@ -592,6 +601,7 @@ namespace spike_visualization {
             }
             
             
+            
             void renderAutoThresholdButtons(){
             
                 if(auto_thresholding == AUTO_THRESHOLD_HIGH){
@@ -644,6 +654,55 @@ namespace spike_visualization {
                                                     auto_threshold_buttons_height);
                 
             }
+        
+            void renderChannelID(){
+                
+                glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_COLOR_BUFFER_BIT); 
+                glDisable (GL_DEPTH_TEST); // ensure text is not removed by depth buffer test.
+                
+                glEnable (GL_BLEND); // for text fading
+                glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA); // ditto
+                glEnable (GL_TEXTURE_RECTANGLE_EXT);
+                
+                
+                GLfloat left = 55.0;
+                GLfloat bottom = view_height - 20.0;
+                GLfloat tw, th;
+                
+                string channel_id_str = (boost::format("channel %d") % channel_id).str();
+                GLuint channel_id_label = string_renderer->stringToTexture(channel_id_str, 
+                                                                           range_frame_font_size - 1., 
+                                                                           &tw, &th);
+                
+                
+                
+                glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  channel_id_label);
+                
+                glColor4f(1.0,1.0,1.0,1.0);
+                glBegin(GL_QUADS);
+                
+                glTexCoord2d(0.0,th); 
+                glVertex2f( left, bottom );
+
+                glTexCoord2d( 0.0, 0.0 );
+                glVertex2f( left, bottom + th );
+                
+                glTexCoord2d(tw, 0.0 );
+                glVertex2f( left + tw, bottom + th );
+                
+                glTexCoord2d( tw, th );
+                glVertex2f( left + tw, bottom );
+                
+                glEnd();
+                
+                
+                glBindTexture(GL_TEXTURE_RECTANGLE_EXT, 0);
+                
+                glDeleteTextures(1, &channel_id_label);
+                
+                glPopAttrib();
+            }
+        
             
             // draw the range bars; assumes we're in a whole-view viewport
             void renderVerticalRangeFrame(){

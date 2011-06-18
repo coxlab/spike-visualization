@@ -431,7 +431,7 @@ namespace spike_visualization {
                 renderAutoThresholdButtons();
                 renderThresholdKnob();
                 glPopMatrix();
-                glPopAttrib();
+                glPopAttrib(); // GL_SCISSOR_BIT
                 
                
                 
@@ -441,10 +441,10 @@ namespace spike_visualization {
                 renderWaves();
                 renderThresholdLine();
                 glPopMatrix();
-                glPopAttrib();
+                glPopAttrib(); // GL_SCISSOR_BIT
             
                 glPopMatrix();
-                glPopAttrib();
+                glPopAttrib(); // GL_VIEWPORT_BIT
             
                 glFlush();
             }

@@ -152,6 +152,12 @@ class SpikeChannelController {
                 case CtlMessage::TIME_MIN:
                     setTimeRangeMin(ctl.value());
                     break;
+                case CtlMessage::UNITS_PER_VOLT:
+                    renderer->setUnitsPerVolt(ctl.value());
+                    break;
+                case CtlMessage::GAIN:
+                    renderer->setAmplifierGain(ctl.value());
+                    break;
             }
             
             recvd = ctl_in_socket->recv(&msg, ZMQ_NOBLOCK);

@@ -11,6 +11,8 @@ message CtlMessage {
     AMPLITUDE_MIN = 5;
     TIME_MAX = 6;
     TIME_MIN = 7;
+    UNITS_PER_VOLT = 8;
+    GAIN = 9;
   }
   optional MessageType message_type = 3;
   optional double value = 4;

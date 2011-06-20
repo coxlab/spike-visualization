@@ -4,15 +4,14 @@ message CtlMessage {
 
   enum MessageType {
     THRESHOLD = 0;
-    AUTOTHRESHOLD_LOW = 1;
-    AUTOTHRESHOLD_HIGH = 2;
-    AUTOTHRESHOLD_FACTOR = 3;
-    AMPLITUDE_MAX = 4;
-    AMPLITUDE_MIN = 5;
-    TIME_MAX = 6;
-    TIME_MIN = 7;
-    UNITS_PER_VOLT = 8;
-    GAIN = 9;
+    AUTOTHRESHOLD_STATE = 1;
+    AUTOTHRESHOLD_FACTOR = 2;
+    AMPLITUDE_MAX = 3;
+    AMPLITUDE_MIN = 4;
+    TIME_MAX = 5;
+    TIME_MIN = 6;
+    UNITS_PER_VOLT = 7;
+    GAIN = 8;
   }
   optional MessageType message_type = 3;
   optional double value = 4;

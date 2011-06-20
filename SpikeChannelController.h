@@ -20,8 +20,7 @@
 #define AMPLITUDE_MIN           CtlMessage::AMPLITUDE_MIN
 #define TIME_MAX                CtlMessage::TIME_MAX
 #define TIME_MIN                CtlMessage::TIME_MIN
-#define AUTOTHRESHOLD_HIGH       CtlMessage::AUTOTHRESHOLD_HIGH
-#define AUTOTHRESHOLD_LOW       CtlMessage::AUTOTHRESHOLD_LOW
+#define AUTOTHRESHOLD_STATE     CtlMessage::AUTOTHRESHOLD_STATE
 
 typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
 
@@ -126,21 +125,23 @@ class SpikeChannelController {
             CtlMessage ctl;
             ctl.ParseFromString(data);
             
+            
             switch(ctl.message_type()){
             
                 case CtlMessage::THRESHOLD:
                     setTriggerThreshold(ctl.value(), true);
                     break;
-                case CtlMessage::AUTOTHRESHOLD_LOW:
-                    if(ctl.value()){
-                        autothresholdDown();
+                case CtlMessage::AUTOTHRESHOLD_STATE:
+                    if(ctl.value() > 0.5){
+                        renderer->setAutoThresholdState(AUTO_THRESHOLD_HIGH);
+                    } else if(ctl.value() < -0.5){
+                        renderer->setAutoThresholdState(AUTO_THRESHOLD_LOW);
+                    } else {
+                        renderer->setAutoThresholdState(AUTO_THRESHOLD_OFF);
                     }
+                    
                     break;
-                case CtlMessage::AUTOTHRESHOLD_HIGH:
-                    if(ctl.value()){
-                        autothresholdUp();
-                    }
-                    break;
+                
                 case CtlMessage::AMPLITUDE_MAX:
                     setAmplitudeRangeMax(ctl.value());
                     break;
@@ -377,24 +378,18 @@ class SpikeChannelController {
             renderer->setAutoThresholdState(AUTO_THRESHOLD_OFF);
 
             if(!silent){
-                sendCtlEvent(AUTOTHRESHOLD_HIGH, false);
+                sendCtlEvent(AUTOTHRESHOLD_STATE, 0.0);
             }
             
             return;
         }
         
-        
-        if(current == AUTO_THRESHOLD_LOW){
-            if(!silent){
-                sendCtlEvent(AUTOTHRESHOLD_LOW, false);
-            }
-        }
 
-        if(!silent){
-            sendCtlEvent(AUTOTHRESHOLD_HIGH, true);
-        }
+
         renderer->setAutoThresholdState(AUTO_THRESHOLD_HIGH);
-        
+        if(!silent){
+            sendCtlEvent(AUTOTHRESHOLD_STATE, 1.0);
+        }        
     }
 
 
@@ -403,24 +398,19 @@ class SpikeChannelController {
         int current = renderer->getAutoThresholdState();
         
         if(current == AUTO_THRESHOLD_LOW){
-            if(!silent){
-                sendCtlEvent(AUTOTHRESHOLD_LOW, false);
-            }
+            
             renderer->setAutoThresholdState(AUTO_THRESHOLD_OFF);
+            if(!silent){
+                sendCtlEvent(AUTOTHRESHOLD_STATE, 0.0);
+            }
             return;
         }
-        
-        
-        if(current == AUTO_THRESHOLD_HIGH){
-            if(!silent){
-                sendCtlEvent(AUTOTHRESHOLD_HIGH, false);
-            }
-        }
-        
-        if(!silent){
-            sendCtlEvent(AUTOTHRESHOLD_LOW, true);
-        }
+                
         renderer->setAutoThresholdState(AUTO_THRESHOLD_LOW);
+        if(!silent){
+            sendCtlEvent(AUTOTHRESHOLD_STATE, -1.0);
+        }
+
     }
 
     void enterAdjustMode( int mode ){  }

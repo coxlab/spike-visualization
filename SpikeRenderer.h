@@ -163,6 +163,18 @@ namespace spike_visualization {
             GLfloat spike_wave_time_offset;
             
             
+            // a utility helper to render strings to GL textures
+            shared_ptr<GLStringRenderer> string_renderer;
+            
+            
+            GLString amplitude_high_label_str;
+            GLString amplitude_low_label_str;
+            GLString amplitude_units_label_str;
+            GLString time_high_label_str;
+            GLString time_low_label_str;
+            GLString time_units_label_str;
+            GLString channel_id_str;
+            
             bool grid_on;
             bool hold_on;
             GLfloat persistence_time;
@@ -173,8 +185,6 @@ namespace spike_visualization {
         
             int max_spikes_to_show;
         
-            // a utility helper to render strings to GL textures
-            shared_ptr<GLStringRenderer> string_renderer;
             
             // hit test regions
             vector< shared_ptr<HitTestRegion> > hit_test_regions;
@@ -196,7 +206,18 @@ namespace spike_visualization {
                           GLfloat _height,
                           GLfloat _offset_x,
                           GLfloat _offset_y,
-                          shared_ptr<GLStringRenderer> _string_renderer){
+                          shared_ptr<GLStringRenderer> _string_renderer,
+                          int _channel_id) :
+                          
+                          string_renderer(_string_renderer),
+                          amplitude_high_label_str(string_renderer, 6),
+                          amplitude_low_label_str(string_renderer, 6),
+                          amplitude_units_label_str(string_renderer, 8),
+                          time_high_label_str(string_renderer, 6),
+                          time_low_label_str(string_renderer, 6),
+                          time_units_label_str(string_renderer, 8),
+                          channel_id_str(string_renderer, 6)
+            {
                 
                 auto_thresholding = AUTO_THRESHOLD_OFF;
                 threshold = 0;
@@ -204,7 +225,7 @@ namespace spike_visualization {
                 units_per_volt = 1;
                 
                 display_channel_id = true;
-                channel_id = 0;
+                channel_id = _channel_id;
                 
                 time_range_min_seconds = _min_time;
                 time_range_max_seconds = _max_time;
@@ -233,7 +254,6 @@ namespace spike_visualization {
                 
                 setViewDimensions(_width, _height);
                 
-                string_renderer = _string_renderer;
                 
                 view_offset_x = _offset_x;
                 view_offset_y = _offset_y;
@@ -754,7 +774,9 @@ namespace spike_visualization {
                 
                 
                 string high_string = (boost::format("%.1f") % (amplitude_range_max_volts*unit_multiplier)).str();
-                GLuint high_label = string_renderer->stringToTexture(high_string, range_frame_font_size, &label_width, &label_height);
+                amplitude_high_label_str = high_string;
+                GLuint high_label = amplitude_high_label_str.toTexture(&label_width, &label_height);
+                //GLuint high_label = string_renderer->stringToTexture(high_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  high_label);
                 
@@ -776,7 +798,9 @@ namespace spike_visualization {
                                            label_width, label_height);
                 
                 string low_string = (boost::format("%.1f") % (amplitude_range_min_volts*unit_multiplier)).str();
-                GLuint low_label = string_renderer->stringToTexture(low_string, range_frame_font_size, &label_width, &label_height);
+                amplitude_low_label_str = low_string;
+                GLuint low_label = amplitude_low_label_str.toTexture(&label_width, &label_height);
+                //GLuint low_label = string_renderer->stringToTexture(low_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  low_label);
                 
@@ -796,7 +820,9 @@ namespace spike_visualization {
                                                 vertical_range_frame_y - lf*label_height/2.0,
                                                 label_width, label_height);
                 
-                GLuint unit_label = string_renderer->stringToTexture(unit_string, range_frame_font_size, &label_width, &label_height);
+                amplitude_units_label_str = unit_string;
+                GLuint unit_label = amplitude_units_label_str.toTexture(&label_width, &label_height);
+                //GLuint unit_label = string_renderer->stringToTexture(unit_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  unit_label);
                 
@@ -817,9 +843,9 @@ namespace spike_visualization {
                 
                 glPopAttrib();
                 
-                glDeleteTextures(1, &high_label);
-                glDeleteTextures(1, &low_label);
-                glDeleteTextures(1, &unit_label);
+                //glDeleteTextures(1, &high_label);
+                //glDeleteTextures(1, &low_label);
+                //glDeleteTextures(1, &unit_label);
             }
 
             // draw the range bars; assumes we're in a whole-view viewport
@@ -866,7 +892,9 @@ namespace spike_visualization {
                 
                 
                 string high_string = (boost::format("%.1f") % (time_range_max_seconds*unit_multiplier)).str();
-                GLuint high_label = string_renderer->stringToTexture(high_string, range_frame_font_size, &label_width, &label_height);
+                time_high_label_str = high_string;
+                GLuint high_label = time_high_label_str.toTexture(&label_width, &label_height);
+                //GLuint high_label = string_renderer->stringToTexture(high_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  high_label);
                 
@@ -889,7 +917,9 @@ namespace spike_visualization {
                 
                 
                 string low_string = (boost::format("%.1f") % (time_range_min_seconds*unit_multiplier)).str();
-                GLuint low_label = string_renderer->stringToTexture(low_string, range_frame_font_size, &label_width, &label_height);
+                time_low_label_str = low_string;
+                GLuint low_label = time_low_label_str.toTexture(&label_width, &label_height); 
+                //GLuint low_label = string_renderer->stringToTexture(low_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  low_label);
                 
@@ -910,7 +940,9 @@ namespace spike_visualization {
                                            label_width, label_height);
                 
                 
-                GLuint unit_label = string_renderer->stringToTexture(unit_string, range_frame_font_size, &label_width, &label_height);
+                time_units_label_str = unit_string;
+                GLuint unit_label = time_units_label_str.toTexture(&label_width, &label_height);
+                //GLuint unit_label = string_renderer->stringToTexture(unit_string, range_frame_font_size, &label_width, &label_height);
                 
                 glBindTexture (GL_TEXTURE_RECTANGLE_EXT,  unit_label);
                 
@@ -931,9 +963,9 @@ namespace spike_visualization {
                 
                 glPopAttrib();
                 
-                glDeleteTextures(1, &high_label);
-                glDeleteTextures(1, &low_label);
-                glDeleteTextures(1, &unit_label);
+                //glDeleteTextures(1, &high_label);
+                //glDeleteTextures(1, &low_label);
+                //glDeleteTextures(1, &unit_label);
                 
             }
             

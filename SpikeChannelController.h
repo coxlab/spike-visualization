@@ -53,7 +53,6 @@ class SpikeChannelController {
                            renderer(_renderer)
     {
         connectSockets();
-        renderer->setChannelID(channel_id);
     }
     
   

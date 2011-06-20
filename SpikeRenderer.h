@@ -306,6 +306,10 @@ namespace spike_visualization {
                 return false;
             }
             
+            bool hitTestEntireView(float x, float y){
+                return ( x > view_offset_x && x < view_offset_x + view_width &&
+                        y > view_offset_y && y < view_offset_y + view_height );
+            }
             
             void setAutoThresholdState(AutoThresholdState _state){
                 auto_thresholding = _state;
@@ -419,7 +423,7 @@ namespace spike_visualization {
             
             // Render Functions
             
-            void render(){
+            void render(bool flush=true){
             
                 glPushAttrib(GL_VIEWPORT_BIT);
                 glMatrixMode(GL_PROJECTION_MATRIX);
@@ -455,7 +459,9 @@ namespace spike_visualization {
                 glPopMatrix();
                 glPopAttrib(); // GL_VIEWPORT_BIT
             
-                glFlush();
+                if(flush){
+                    glFlush();
+                }
             }
             
             

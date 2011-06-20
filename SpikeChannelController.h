@@ -178,8 +178,8 @@ class SpikeChannelController {
   
   
     // drawing related
-    void render(){
-        renderer->render();
+    void render(bool flush=true){
+        renderer->render(flush);
     }
     
     void setViewport( float x_offset, float y_offset, float width, float height ){
@@ -224,7 +224,12 @@ class SpikeChannelController {
             
     }
     
-    void scrollWheel(float delta_y){
+    void scrollWheel(float delta_y, float x, float y){
+        
+        
+        if(!renderer->hitTestEntireView(x,y)){
+            return;
+        }
         
         if(fabs(delta_y) < 0.5){
             return;
@@ -235,7 +240,6 @@ class SpikeChannelController {
         GLfloat current_min = renderer->getAmplitudeRangeMin();
         
         renderer->convertViewToDataSize(0.0, -delta_y, &data_x, &data_y);
-        
         
         float gain = 1;
         

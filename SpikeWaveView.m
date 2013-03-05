@@ -27,7 +27,7 @@
                                  frame_rect.size.height,
                                  0.0,
                                  0.0,
-                                 string_renderer);
+                                 string_renderer, 0);
     
     adjust_mode = -1;
                                  

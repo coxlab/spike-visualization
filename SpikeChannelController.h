@@ -187,7 +187,7 @@ class SpikeChannelController {
     }
     
     // UI interaction
-    void mouseDown(float x, float y){
+    int mouseDown(float x, float y){
         
         SpikeWaveSelectionAction action;
     
@@ -220,8 +220,10 @@ class SpikeChannelController {
                 default:
                     break;
             }
+            return adjust_mode;
         }
-            
+        
+        return -1;
     }
     
     void scrollWheel(float delta_y, float x, float y){

@@ -10,7 +10,7 @@
 #define GL_STRING_RENDERER_H_
 
 #include <OpenGL/gl.h>
-#include <string>
+#include <cstring>
 #include <boost/shared_ptr.hpp>
 
 using std::string;
